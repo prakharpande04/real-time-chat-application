@@ -19,9 +19,9 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   // Handle incoming chat messages
-  socket.on('chat message', async ({ userId, content }) => {
+  socket.on('chat message', async ({ userId, userName, content }) => {
     try {
-      const savedMessage = await new Message({ content, userId }).save(); // Save with userId
+      const savedMessage = await new Message({ userId, userName, content }).save(); // Save with userId
       io.emit('chat message', savedMessage); // Emit the saved message to all clients
     } catch (err) {
       console.error('Error saving message:', err);

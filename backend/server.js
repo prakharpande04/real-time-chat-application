@@ -12,7 +12,11 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: "https://real-time-chat-application-4vj8.vercel.app/", // Replace with your frontend's URL
+  methods: ["GET", "POST"],
+  credentials: true,
+}));
 app.use(express.json());
 
 io.on('connection', async (socket) => {

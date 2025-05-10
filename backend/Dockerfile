@@ -1,18 +1,22 @@
-FROM node:22-alpine
+# Use a lightweight Node.js image
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Install only production dependencies
+# Install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --production
 
 # Copy source code
 COPY . .
 
-# Use environment variable for port
-ENV PORT=5000
+# Expose the application port
 EXPOSE 5000
 
-# Run application
-CMD ["npm", "run", "dev"]
+# Set environment variables (optional)
+ENV NODE_ENV=production
+ENV PORT=5000
+
+# Start the backend server
+CMD ["npm", "start"]

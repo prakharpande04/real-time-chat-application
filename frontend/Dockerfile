@@ -12,17 +12,20 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:22-alpine AS runner
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+# working directory
+WORKDIR /usr/share/nginx/html
 
-# Only copy necessary files for production
-COPY --from=builder /app/public ./public
+# Copy the built application from the builder stage
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
 
-ENV PORT=3000
-EXPOSE 3000
+# Copy a custom NGINX configuration file (optional)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-CMD ["npm", "run", "dev"]
+# Expose the port NGINX will listen on
+EXPOSE 80
+
+# Start NGINX
+CMD ["nginx", "-g", "daemon off;"]

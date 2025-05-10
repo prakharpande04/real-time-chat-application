@@ -4,6 +4,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const Message = require('./models/Message'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -14,20 +15,17 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Chat Schema
-const messageSchema = new mongoose.Schema({
-  content: String,
-  timestamp: { type: Date, default: Date.now }
-});
-const Message = mongoose.model('Message', messageSchema);
-
-// Socket.IO events
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('chat message', async (msg) => {
-    const saved = await new Message({ content: msg }).save();
-    io.emit('chat message', saved.content);
+  // Handle incoming chat messages
+  socket.on('chat message', async ({ userId, content }) => {
+    try {
+      const savedMessage = await new Message({ content, userId }).save(); // Save with userId
+      io.emit('chat message', savedMessage); // Emit the saved message to all clients
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
   });
 
   socket.on('disconnect', () => {

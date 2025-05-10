@@ -15,14 +15,26 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   console.log('User connected:', socket.id);
 
-  // Handle incoming chat messages
-  socket.on('chat message', async ({ userId, userName, content }) => {
+  // Join a room
+  socket.on('join room', async ({ roomId }) => {
+    socket.join(roomId);
+    console.log(`User ${socket.id} joined room ${roomId}`);
     try {
-      const savedMessage = await new Message({ userId, userName, content }).save(); // Save with userId
-      io.emit('chat message', savedMessage); // Emit the saved message to all clients
+      const messages = await Message.find({ roomId }).sort({ timestamp: 1 }); // Fetch messages for the room
+      socket.emit('chat history', messages); // Send chat history to the client
+    } catch (err) {
+      console.error('Error fetching chat history:', err);
+    }
+  });
+
+  // Handle incoming chat messages
+  socket.on('chat message', async ({ roomId, userId, userName, content }) => {
+    try {
+      const savedMessage = await new Message({ roomId, userId, userName, content }).save(); // Save with roomId
+      io.to(roomId).emit('chat message', savedMessage); // Emit the message to the specific room
     } catch (err) {
       console.error('Error saving message:', err);
     }

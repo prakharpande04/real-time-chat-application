@@ -9,7 +9,7 @@ services:
     depends_on:
       - backend
     environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:5000
     restart: always
 
   backend:
@@ -17,21 +17,6 @@ services:
     container_name: chat-backend
     ports:
       - "5000:5000"
-    depends_on:
-      - mongo
-    environment:
-      - PORT=5000
-      - MONGO_URI=mongodb://mongo:27017/chatapp
+    env_file:
+      - .env
     restart: always
-
-  mongo:
-    image: mongo:6
-    container_name: chat-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    restart: always
-
-volumes:
-  mongo-data:

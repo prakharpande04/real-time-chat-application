@@ -10,10 +10,16 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<{ content: string; userId: string, userName: string }[]>([]);
   const [user, setUser] = useState<any>(null);
+   const [roomId, setRoomId] = useState<string>(""); // Room ID state
 
   useEffect(() => {
     const socketInstance = getSocket();
     setSocket(socketInstance);
+
+        // Listen for chat history
+    socketInstance.on("chat history", (history: { content: string; userId: string, userName: string }[]) => {
+      setMessages(history); // Set chat history in state
+    });
 
     // Listen for incoming messages
     socketInstance.on("chat message", (msg: { content: string; userId: string, userName: string }) => {
@@ -26,6 +32,7 @@ export default function ChatPage() {
     });
 
     return () => {
+      socketInstance.off("chat history");
       socketInstance.off("chat message");
       unsubscribe();
     };
@@ -48,10 +55,20 @@ export default function ChatPage() {
     }
   };
 
+   const joinRoom = () => {
+    if (roomId.trim()) {
+      socket?.emit("join room", { roomId }); // Emit join room event
+    }
+  };
+
   const sendMessage = () => {
-    if (message.trim() && user) {
-      // Send userId (user.uid) and content
-      socket?.emit("chat message", { userId: user.uid, userName: user.displayName, content: message });
+    if (message.trim() && user && roomId) {
+      socket?.emit("chat message", {
+        roomId,
+        userId: user.uid,
+        userName: user.displayName,
+        content: message,
+      });
       setMessage("");
     }
   };
@@ -80,6 +97,17 @@ export default function ChatPage() {
           onClick={logout}
         >
           Logout
+        </button>
+      </div>
+      <div className="mb-4">
+        <input
+          className="border p-2 flex-1"
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
+          placeholder="Enter Room ID"
+        />
+        <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={joinRoom}>
+          Join Room
         </button>
       </div>
       <ul className="mt-4 space-y-2">

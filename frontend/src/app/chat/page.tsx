@@ -3,32 +3,38 @@
 import { useEffect, useState } from "react";
 import { getSocket } from "@/lib/socket";
 import { auth } from "@/lib/firebaseConfig";
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
   const [socket, setSocket] = useState<any>(null);
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<{ content: string; userId: string, userName: string }[]>([]);
+  const [messages, setMessages] = useState<{ content: string; userId: string; userName: string }[]>([]);
   const [user, setUser] = useState<any>(null);
-   const [roomId, setRoomId] = useState<string>(""); // Room ID state
+  const [roomId, setRoomId] = useState<string>(""); // Room ID state
+  const router = useRouter();
 
   useEffect(() => {
     const socketInstance = getSocket();
     setSocket(socketInstance);
 
-        // Listen for chat history
-    socketInstance.on("chat history", (history: { content: string; userId: string, userName: string }[]) => {
+    // Listen for chat history
+    socketInstance.on("chat history", (history: { content: string; userId: string; userName: string }[]) => {
       setMessages(history); // Set chat history in state
     });
 
     // Listen for incoming messages
-    socketInstance.on("chat message", (msg: { content: string; userId: string, userName: string }) => {
+    socketInstance.on("chat message", (msg: { content: string; userId: string; userName: string }) => {
       setMessages((prev) => [...prev, msg]);
     });
 
     // Listen for Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser); // Set the user if logged in
+      } else {
+        router.push('/');
+      }
     });
 
     return () => {
@@ -38,24 +44,7 @@ export default function ChatPage() {
     };
   }, []);
 
-  const login = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-   const joinRoom = () => {
+  const joinRoom = () => {
     if (roomId.trim()) {
       socket?.emit("join room", { roomId }); // Emit join room event
     }
@@ -77,12 +66,7 @@ export default function ChatPage() {
     return (
       <div className="p-4">
         <h1 className="text-xl font-bold">🧠 Real-Time Chat</h1>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={login}
-        >
-          Login with Google
-        </button>
+        <p>Loading user information...</p>
       </div>
     );
   }
@@ -92,12 +76,6 @@ export default function ChatPage() {
       <h1 className="text-xl font-bold">🧠 Real-Time Chat</h1>
       <div className="mb-4">
         <p>Welcome, {user.displayName}!</p>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded"
-          onClick={logout}
-        >
-          Logout
-        </button>
       </div>
       <div className="mb-4">
         <input

@@ -24,6 +24,12 @@ export default function ChatPage() {
   const [allMessages, setAllMessages] = useState<Message[]>([]);
   const router = useRouter();
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen); // Toggle sidebar visibility
+  };
+
   useEffect(() => {
     const socketInstance = getSocket();
     setSocket(socketInstance);
@@ -138,32 +144,54 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Rooms List */}
-      <div className="w-1/4 bg-gray-100 text-black p-4 border-r overflow-y-auto">
+  <div className="flex flex-col h-screen bg-gray-900 bg-fixed text-white">
+    {/* Navbar */}
+    <div className="flex items-center justify-between bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3 shadow-lg">
+      <h1 className="text-xl font-bold">🤖 AI Chat</h1>
+      {/* Menu Button (Visible on Mobile Only) */}
+      <button
+        className="md:hidden bg-white text-blue-500 px-4 py-2 rounded shadow"
+        onClick={toggleSidebar}
+      >
+        Menu
+      </button>
+    </div>
+
+    <div className="flex flex-1">
+      {/* Sidebar (Sliding Rooms List) */}
+      <div
+        className={`fixed top-0 left-0 h-full bg-gray-800 text-white p-4 border-r border-gray-700 overflow-y-auto transform ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 z-50 w-64 md:static md:translate-x-0`}
+      >
         <h2 className="text-lg font-bold mb-4">Rooms</h2>
         <ul className="space-y-2">
           {rooms.map((room, idx) => (
             <li
               key={idx}
-              className={`p-2 rounded cursor-pointer ${
-                room === roomId ? "bg-blue-500 text-white" : "bg-gray-200"
+              className={`p-3 rounded-lg cursor-pointer transition ${
+                room === roomId
+                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                  : "bg-gray-700 hover:bg-gray-600"
               }`}
-              onClick={() => openRoom(room)}
+              onClick={() => {
+                openRoom(room);
+                setIsSidebarOpen(false); // Close sidebar after selecting a room
+              }}
             >
               {room}
             </li>
           ))}
         </ul>
-        <div className="mt-4">
+        <div className="mt-6">
           <input
-            className="border p-2 w-full"
+            className="border border-gray-600 bg-gray-700 text-white p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
             placeholder="Enter Room ID"
           />
           <button
-            className="bg-green-500 text-white px-4 py-2 rounded w-full mt-2"
+            className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-2 rounded-lg w-full mt-3 shadow-lg hover:opacity-90"
             onClick={joinRoom}
           >
             Join Room
@@ -172,32 +200,35 @@ export default function ChatPage() {
       </div>
 
       {/* Chat Box */}
-      <div className="w-3/4 flex flex-col p-4">
-        <div className="flex-1 overflow-y-auto">
-          <ul className="space-y-2">
+      <div className="flex-1 flex flex-col p-4">
+        <div className="flex-1 overflow-y-auto flex flex-col-reverse space-y-4 pb-20">
+          <ul className="space-y-4">
             {messages.map((msg, idx) => (
               <li
                 key={idx}
-                className={`p-2 rounded max-w-xs ${
+                className={`p-4 rounded-lg max-w-sm shadow-lg ${
                   msg.userId === user.email
-                    ? "bg-green-500 text-white self-end ml-auto"
-                    : "bg-gray-200 text-black self-start mr-auto"
+                    ? "bg-gradient-to-r from-green-500 to-teal-500 text-white self-end ml-auto"
+                    : "bg-gray-700 text-white self-start mr-auto"
                 }`}
               >
-                <strong>{msg.userName}:</strong> {msg.content}
+                <strong className="block text-sm text-gray-300">
+                  {msg.userName}
+                </strong>
+                <p className="mt-1">{msg.content}</p>
               </li>
             ))}
           </ul>
         </div>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex gap-2 fixed bottom-0 left-63 right-0 p-4 bg-gray-800 border-t border-gray-700">
           <input
-            className="border p-2 flex-1"
+            className="border border-gray-600 bg-gray-800 text-white p-3 flex-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message"
+            placeholder="Type a message..."
           />
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-lg hover:opacity-90"
             onClick={sendMessage}
           >
             Send
@@ -205,5 +236,6 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

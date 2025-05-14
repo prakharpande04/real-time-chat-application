@@ -13,7 +13,8 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://chat-app-prakharpande04.duckdns.org:3000"
+  "http://chat-app-prakharpande04.duckdns.org:3000",
+  "http://13.203.198.235:3000"
 ];
 
 const io = new Server(server, {

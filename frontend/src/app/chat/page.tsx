@@ -51,7 +51,7 @@ export default function ChatPage() {
 
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/messages?email=${currentUser.email}`
+            `http://13.203.198.235:5000/api/messages?email=${currentUser.email}`
           );
           const data: Message[] = response.data;
           setAllMessages(data);
@@ -67,7 +67,7 @@ export default function ChatPage() {
             setRoomId(firstRoom);
             socketInstance.emit("join room", { roomId: firstRoom });
             const chatHistory = await axios.get(
-              `http://localhost:5000/api/rooms/${firstRoom}/messages`
+              `http://13.203.198.235:5000/api/rooms/${firstRoom}/messages`
             );
             setMessages(chatHistory.data);
           }
@@ -95,7 +95,7 @@ export default function ChatPage() {
 
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/rooms/${roomId}/messages`
+          `http://13.203.198.235:5000/api/rooms/${roomId}/messages`
         );
         setMessages(response.data);
       } catch (error) {
@@ -126,7 +126,7 @@ export default function ChatPage() {
     socket?.emit("join room", { roomId: room });
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/rooms/${room}/messages`
+        `http://13.203.198.235:5000/api/rooms/${room}/messages`
       );
       setMessages(response.data);
     } catch (error) {

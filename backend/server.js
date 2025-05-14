@@ -11,16 +11,31 @@ const User = require('./models/User');
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://chat-app-prakharpande04.duckdns.org:3000"
+];
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS (Socket.IO)"));
+      }
+    },
   }
 });
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS (Express.JS)"));
+      }
+    },
   methods: ["GET", "POST"],
   credentials: true,
 }));

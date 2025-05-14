@@ -233,7 +233,7 @@ export default function ChatPage() {
             }}
           />
           <button
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-lg hover:opacity-90"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-grey px-6 py-3 rounded-lg shadow-lg hover:opacity-90"
             onClick={sendMessage}
           >
             Send

@@ -2,11 +2,6 @@ pipeline {
   agent any
 
   stages {
-    stage('Checkout') {
-      steps {
-        git 'https://github.com/prakharpande04/real-time-chat-application.git'
-      }
-    }
     stage('Build & Run Docker Compose') {
       steps {
         script {
